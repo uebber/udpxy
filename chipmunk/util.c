@@ -48,7 +48,7 @@ extern const int   BUILDNUM;
 extern const char  BUILD_TYPE[];
 extern const int   PATCH;
 
-static char s_sysinfo [80] = "\0";
+static char s_sysinfo [256] = "\0";
 
 extern struct udpxy_opt g_uopt;
 
@@ -435,12 +435,16 @@ read_buf( int fd, char* data, const ssize_t len, FILE* log )
     }
 
     if( nrd < 0 ) {
+        int err = errno;
         if( log ) {
             if( would_block(err) )
-                (void)tmfprintf( log, "%s: socket time-out on read", __func__);
+                (void)tmfprintf( log, "%s: socket time-out on read\n", __func__);
             else if( !no_fault(err) || g_uopt.is_verbose )
-                mperror( log, errno, "%s: read", __func__ );
+                mperror( log, errno, "%s: read\n", __func__ );
         }
+
+        errno = err;
+        if (!n) return nrd;
     }
 
     return n;
